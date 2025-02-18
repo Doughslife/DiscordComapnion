@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, CommandInteraction } from "discord.js";
 import { commands } from "./index";
 import { HelpMenu } from "./help/menu";
 
@@ -7,7 +7,7 @@ export const helpCommand = {
     .setName("help")
     .setDescription("Shows an interactive help menu with all available commands"),
 
-  async execute(interaction: any) {
+  async execute(interaction: CommandInteraction) {
     const menu = new HelpMenu(commands);
     await menu.start(interaction);
   }
