@@ -1,4 +1,4 @@
-import { type User, type Command, type GuildSettings, type InsertUser, type InsertCommand, type InsertGuildSettings } from "@shared/schema";
+import { type User, type Command, type GuildSettings, type RoleAssignment, type InsertUser, type InsertCommand, type InsertGuildSettings, type InsertRoleAssignment } from "@shared/schema";
 
 export interface IStorage {
   // User operations
@@ -16,19 +16,27 @@ export interface IStorage {
   // Guild settings
   getGuildSettings(guildId: string): Promise<GuildSettings | undefined>;
   setGuildSettings(settings: InsertGuildSettings): Promise<GuildSettings>;
+
+  // Role assignments
+  createRoleAssignment(assignment: InsertRoleAssignment): Promise<RoleAssignment>;
+  getRoleAssignments(guildId: string): Promise<RoleAssignment[]>;
+  deleteRoleAssignment(id: number): Promise<void>;
+  updateRoleAssignment(id: number, assignment: Partial<InsertRoleAssignment>): Promise<RoleAssignment>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private commands: Map<string, Command>;
   private settings: Map<string, GuildSettings>;
-  private currentIds: { users: number; commands: number; settings: number };
+  private roleAssignments: Map<number, RoleAssignment>;
+  private currentIds: { users: number; commands: number; settings: number; roleAssignments: number };
 
   constructor() {
     this.users = new Map();
     this.commands = new Map();
     this.settings = new Map();
-    this.currentIds = { users: 1, commands: 1, settings: 1 };
+    this.roleAssignments = new Map();
+    this.currentIds = { users: 1, commands: 1, settings: 1, roleAssignments: 1 };
   }
 
   async getUser(discordId: string): Promise<User | undefined> {
@@ -113,6 +121,45 @@ export class MemStorage implements IStorage {
     };
     this.settings.set(settings.guildId, settings);
     return settings;
+  }
+
+  // Role assignment methods
+  async createRoleAssignment(insertAssignment: InsertRoleAssignment): Promise<RoleAssignment> {
+    const id = this.currentIds.roleAssignments++;
+    const assignment: RoleAssignment = {
+      id,
+      guildId: insertAssignment.guildId,
+      roleId: insertAssignment.roleId,
+      emoji: insertAssignment.emoji,
+      description: insertAssignment.description,
+      messageId: insertAssignment.messageId ?? null,
+      channelId: insertAssignment.channelId ?? null
+    };
+    this.roleAssignments.set(id, assignment);
+    return assignment;
+  }
+
+  async getRoleAssignments(guildId: string): Promise<RoleAssignment[]> {
+    return Array.from(this.roleAssignments.values())
+      .filter(assignment => assignment.guildId === guildId);
+  }
+
+  async deleteRoleAssignment(id: number): Promise<void> {
+    this.roleAssignments.delete(id);
+  }
+
+  async updateRoleAssignment(id: number, updates: Partial<InsertRoleAssignment>): Promise<RoleAssignment> {
+    const existing = this.roleAssignments.get(id);
+    if (!existing) throw new Error("Role assignment not found");
+
+    const updated: RoleAssignment = {
+      ...existing,
+      ...updates,
+      id // Ensure ID doesn't change
+    };
+
+    this.roleAssignments.set(id, updated);
+    return updated;
   }
 }
 

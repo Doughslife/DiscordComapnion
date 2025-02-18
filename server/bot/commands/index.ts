@@ -2,6 +2,7 @@ import { Client, Collection, SlashCommandBuilder, CommandInteraction } from "dis
 import { helpCommand } from "./help";
 import { moderationCommands } from "./moderation";
 import { customCommands } from "./custom";
+import { roleCommands } from "./roles";
 
 export interface Command {
   data: SlashCommandBuilder;
@@ -23,6 +24,11 @@ export function registerCommands(client: Client) {
 
   // Custom commands handler
   customCommands.forEach((command) => {
+    commands.set(command.data.name, command);
+  });
+
+  // Role commands
+  roleCommands.forEach((command) => {
     commands.set(command.data.name, command);
   });
 
