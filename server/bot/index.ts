@@ -16,20 +16,33 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessageReactions
   ]
 });
 
-// Deploy commands first
-deployCommands().then(() => {
-  // Register commands and events after deployment
-  registerCommands(client);
-  registerEvents(client);
+async function initializeBot() {
+  try {
+    // Deploy commands first
+    console.log('Starting command deployment...');
+    await deployCommands();
 
-  client.login(process.env.DISCORD_TOKEN);
-}).catch(error => {
-  console.error("Failed to deploy commands:", error);
-  process.exit(1);
-});
+    // Register command handlers and events
+    console.log('Registering commands and events...');
+    registerCommands(client);
+    registerEvents(client);
+
+    // Login to Discord
+    console.log('Logging in to Discord...');
+    await client.login(process.env.DISCORD_TOKEN);
+
+  } catch (error) {
+    console.error('Failed to initialize bot:', error);
+    process.exit(1);
+  }
+}
+
+// Initialize the bot
+initializeBot();
 
 export default client;
