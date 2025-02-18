@@ -4,7 +4,7 @@ import { moderationCommands } from "./moderation";
 import { customCommands } from "./custom";
 
 export interface Command {
-  data: Omit<SlashCommandBuilder, "addSubcommandGroup" | "addSubcommand">;
+  data: SlashCommandBuilder;
   execute: (interaction: CommandInteraction) => Promise<void>;
 }
 
@@ -13,16 +13,16 @@ export const commands = new Collection<string, Command>();
 // Register all commands
 export function registerCommands(client: Client) {
   // Core commands
-  commands.set("help", helpCommand);
+  commands.set("help", helpCommand as Command);
 
   // Moderation commands
   moderationCommands.forEach((command) => {
-    commands.set(command.data.name, command);
+    commands.set(command.data.name, command as Command);
   });
 
   // Custom commands handler
   customCommands.forEach((command) => {
-    commands.set(command.data.name, command);
+    commands.set(command.data.name, command as Command);
   });
 
   // Register with Discord
