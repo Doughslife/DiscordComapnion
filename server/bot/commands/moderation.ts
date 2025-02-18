@@ -1,7 +1,8 @@
 import { SlashCommandBuilder } from "discord.js";
 import { storage } from "../../storage";
+import type { Command } from "./index";
 
-export const moderationCommands = [
+export const moderationCommands: Command[] = [
   {
     data: new SlashCommandBuilder()
       .setName("warn")
@@ -16,40 +17,40 @@ export const moderationCommands = [
           .setDescription("Reason for warning")
           .setRequired(true)
       ),
-      
-    async execute(interaction: any) {
-      if (!interaction.member.permissions.has("MODERATE_MEMBERS")) {
+
+    async execute(interaction) {
+      if (!interaction.member?.permissions.has("MODERATE_MEMBERS")) {
         return interaction.reply({
           content: "You don't have permission to use this command",
           ephemeral: true
         });
       }
-      
+
       const user = interaction.options.getUser("user");
       const reason = interaction.options.getString("reason");
-      
+
       const warned = await storage.addWarning(user.id);
-      
+
       await interaction.reply({
         content: `Warned ${user.tag} (${warned.warnings} warnings total)\nReason: ${reason}`,
         ephemeral: true
       });
     }
   },
-  
+
   {
     data: new SlashCommandBuilder()
       .setName("modtoggle")
       .setDescription("Toggle auto-moderation for this server"),
-      
-    async execute(interaction: any) {
-      if (!interaction.member.permissions.has("MANAGE_GUILD")) {
+
+    async execute(interaction) {
+      if (!interaction.member?.permissions.has("MANAGE_GUILD")) {
         return interaction.reply({
           content: "You don't have permission to use this command",
           ephemeral: true
         });
       }
-      
+
       const settings = await storage.getGuildSettings(interaction.guildId);
       if (!settings) {
         await storage.setGuildSettings({
@@ -58,12 +59,12 @@ export const moderationCommands = [
         });
         return interaction.reply("Auto-moderation enabled");
       }
-      
+
       await storage.setGuildSettings({
         ...settings,
         moderationEnabled: settings.moderationEnabled ? 0 : 1
       });
-      
+
       await interaction.reply(`Auto-moderation ${settings.moderationEnabled ? 'disabled' : 'enabled'}`);
     }
   }

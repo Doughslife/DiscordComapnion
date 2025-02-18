@@ -23,16 +23,16 @@ const client = new Client({
 
 async function initializeBot() {
   try {
-    // Deploy commands first
-    console.log('Starting command deployment...');
-    await deployCommands();
-
-    // Register command handlers and events
-    console.log('Registering commands and events...');
+    // Register command handlers first
+    console.log('Registering command handlers...');
     registerCommands(client);
     registerEvents(client);
 
-    // Login to Discord
+    // Then deploy commands
+    console.log('Deploying commands...');
+    await deployCommands();
+
+    // Finally login
     console.log('Logging in to Discord...');
     await client.login(process.env.DISCORD_TOKEN);
 

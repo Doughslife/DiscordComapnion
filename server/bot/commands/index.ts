@@ -8,22 +8,26 @@ export interface Command {
   execute: (interaction: CommandInteraction) => Promise<void>;
 }
 
+// Create a collection to store all commands
 export const commands = new Collection<string, Command>();
 
 // Register all commands
 export function registerCommands(client: Client) {
   // Core commands
-  commands.set("help", helpCommand as Command);
+  commands.set("help", helpCommand);
 
   // Moderation commands
   moderationCommands.forEach((command) => {
-    commands.set(command.data.name, command as Command);
+    commands.set(command.data.name, command);
   });
 
   // Custom commands handler
   customCommands.forEach((command) => {
-    commands.set(command.data.name, command as Command);
+    commands.set(command.data.name, command);
   });
+
+  // Log registered commands
+  console.log("Registered commands:", Array.from(commands.keys()));
 
   // Register with Discord
   client.on("interactionCreate", async (interaction) => {
